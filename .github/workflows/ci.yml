@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: go test -race ./...
+      - run: go test ./pii -run '^$' -fuzz FuzzRedact -fuzztime 30s
+      - run: go build ./...
+      - run: GOOS=js GOARCH=wasm go vet ./cmd/sensor-wasm
+      - run: GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/sensor-wasm
+      - run: node --check web/app.js

@@ -1,0 +1,10 @@
+/sensor
+/dist/
+*.test
+*.out
+.env
+.env.*
+node_modules/
+web/vendor/
+web/sensor.wasm
+web/wasm_exec.js

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' blob: data:; style-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>sensor — samarkan data pribadi sebelum dikirim</title>
+  <meta name="description" content="Tutup NIK, nama, alamat, nomor HP, dan rekening di foto KTP atau teks sebelum dikirim. Diproses 100% di perangkat Anda, tanpa upload.">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><img src="favicon.svg" alt="" width="28" height="28"> <strong>sensor</strong></div>
+    <a class="gh" href="https://github.com/Emil-02/sensor" rel="noopener">GitHub</a>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Samarkan data pribadi sebelum dikirim</h1>
+      <p>Tutup NIK, nama, alamat, nomor HP, dan rekening di foto KTP atau teks. Tambahkan watermark tujuan supaya fotonya tidak bisa dipakai ulang untuk pinjol atau penipuan.</p>
+      <p class="privacy">🔒 Diproses 100% di perangkat Anda. Foto dan teks <strong>tidak pernah di-upload</strong>.</p>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tab-photo" aria-selected="true" aria-controls="panel-photo">Foto KTP / dokumen</button>
+      <button role="tab" id="tab-text" aria-selected="false" aria-controls="panel-text">Teks</button>
+    </nav>
+
+    <section id="panel-photo" role="tabpanel" aria-labelledby="tab-photo">
+      <div class="drop" id="drop">
+        <p><strong>Pilih foto</strong>, seret ke sini, atau tempel (Ctrl+V).</p>
+        <div class="row">
+          <label class="btn primary">Pilih foto<input type="file" id="file" accept="image/*" hidden></label>
+          <button class="btn" id="sample">Coba dengan contoh KTP fiktif</button>
+        </div>
+      </div>
+
+      <div id="editor" class="editor" hidden>
+        <div class="canvas-wrap">
+          <canvas id="canvas" aria-label="Pratinjau foto"></canvas>
+          <div id="busy" class="busy" hidden><span id="busy-text">Membaca teks…</span><progress id="busy-progress" max="1" value="0"></progress></div>
+        </div>
+
+        <aside class="side">
+          <h2>Data yang ditemukan</h2>
+          <p class="hint" id="found-hint">Centang untuk menutup.</p>
+          <ul id="found" class="found"></ul>
+
+          <h2>Tutup manual</h2>
+          <p class="hint">Seret di foto untuk menutup bagian lain (foto wajah, tanda tangan, data yang terlewat).</p>
+          <div class="row">
+            <button class="btn" id="undo">↶ Batalkan</button>
+            <button class="btn" id="clear-manual">Hapus kotak manual</button>
+          </div>
+
+          <h2>Watermark</h2>
+          <label class="check"><input type="checkbox" id="wm-on" checked> Tambahkan watermark</label>
+          <input type="text" id="wm-text" class="input" maxlength="60" placeholder="Untuk apa? mis. verifikasi akun Tokopedia" value="verifikasi">
+          <p class="hint">Teks: “Hanya untuk <span id="wm-preview">verifikasi</span> · <span id="wm-date"></span>”</p>
+
+          <div class="warn">⚠️ OCR bisa salah baca. <strong>Periksa pratinjau</strong> dan tutup manual bagian yang terlewat sebelum mengunduh.</div>
+
+          <div class="row">
+            <button class="btn primary" id="download">Unduh hasil (PNG)</button>
+            <button class="btn" id="reset">Foto lain</button>
+          </div>
+          <p class="hint">File hasil tidak menyimpan metadata lokasi/kamera (EXIF).</p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="panel-text" role="tabpanel" aria-labelledby="tab-text" hidden>
+      <div class="text-grid">
+        <div>
+          <label for="text-in"><h2>Teks asli</h2></label>
+          <textarea id="text-in" class="input" rows="12" spellcheck="false" placeholder="Tempel chat, log, atau data di sini…"></textarea>
+        </div>
+        <div>
+          <div class="row spread">
+            <h2>Hasil</h2>
+            <select id="text-mode" class="input small" aria-label="Cara menyamarkan">
+              <option value="mask">Sisakan 4 digit terakhir</option>
+              <option value="label">Ganti dengan jenis data</option>
+            </select>
+          </div>
+          <pre id="text-out" class="output" aria-live="polite"></pre>
+          <div class="row">
+            <button class="btn primary" id="copy">Salin hasil</button>
+            <span id="text-count" class="hint"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="info">
+      <h2>Yang dikenali</h2>
+      <p>NIK, nomor KK, NPWP, nomor HP, nomor rekening (bila ada kata seperti “rek”, “BCA”, “a.n.”), kartu kredit/debit, nomor BPJS, email, serta isian berlabel seperti Nama, Alamat, RT/RW, Kel/Desa, Kecamatan, dan Tempat/Tgl Lahir.</p>
+      <h2>Untuk developer</h2>
+      <p>Mesin yang sama tersedia sebagai library Go, handler <code>log/slog</code>, dan CLI untuk membersihkan log:</p>
+      <pre class="output">go install github.com/Emil-02/sensor/cmd/sensor@latest
+kubectl logs api | sensor redact</pre>
+    </section>
+  </main>
+
+  <footer>Open source (MIT) · <a href="https://github.com/Emil-02/sensor" rel="noopener">github.com/Emil-02/sensor</a></footer>
+
+  <script src="wasm_exec.js"></script>
+  <script src="vendor/tesseract/tesseract.min.js"></script>
+  <script src="app.js" type="module"></script>
+</body>
+</html>

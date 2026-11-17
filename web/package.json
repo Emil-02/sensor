@@ -1,0 +1,10 @@
+{
+  "name": "sensor-web",
+  "private": true,
+  "description": "Vendored OCR assets for the sensor web app (copied by scripts/build-web.sh)",
+  "license": "MIT",
+  "dependencies": {
+    "@tesseract.js-data/ind": "1.0.0",
+    "tesseract.js": "7.0.0"
+  }
+}
