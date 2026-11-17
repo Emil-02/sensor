@@ -175,10 +175,11 @@ async function ocr(base) {
   }
   const worker = await getWorker();
   const { data } = await worker.recognize(src, {}, { blocks: true, text: false });
-  const words = [];
+  const lines = [];
   for (const block of data.blocks || []) {
     for (const para of block.paragraphs || []) {
       for (const line of para.lines || []) {
+        const words = [];
         for (const w of line.words || []) {
           if (!w.text || !w.text.trim()) continue;
           words.push({
@@ -186,30 +187,54 @@ async function ocr(base) {
             bbox: { x0: w.bbox.x0 / scale, y0: w.bbox.y0 / scale, x1: w.bbox.x1 / scale, y1: w.bbox.y1 / scale },
           });
         }
+        if (words.length) lines.push(words);
       }
     }
   }
-  return visualRows(words);
+  return visualRows(lines);
+}
+
+const median = (xs) => {
+  const s = [...xs].sort((a, b) => a - b);
+  return s.length ? s[Math.floor(s.length / 2)] : 0;
+};
+
+// Estimates how much the photo is tilted from the bottom edges of words
+// Tesseract already put on the same line.
+function skewSlope(lines) {
+  const slopes = [];
+  for (const ws of lines) {
+    if (ws.length < 2) continue;
+    const a = ws[0].bbox;
+    const b = ws[ws.length - 1].bbox;
+    const dx = (b.x0 + b.x1) / 2 - (a.x0 + a.x1) / 2;
+    if (dx > 40) slopes.push((b.y1 - a.y1) / dx);
+  }
+  return Math.max(-0.35, Math.min(0.35, median(slopes)));
 }
 
 // Tesseract often puts the label column ("Nama") and the value column
 // (": SITI AMINAH") of a KTP in different blocks. Regroup words into rows by
-// vertical position so each label sits on the same line as its value.
-function visualRows(words) {
-  const cy = (w) => (w.bbox.y0 + w.bbox.y1) / 2;
-  const h = (w) => w.bbox.y1 - w.bbox.y0;
+// their de-skewed vertical position so each label sits on the same line as
+// its value, even when the photo is tilted.
+function visualRows(lines) {
+  const slope = skewSlope(lines);
+  const words = lines.flat().map((w) => {
+    const cx = (w.bbox.x0 + w.bbox.x1) / 2;
+    return { ...w, y: (w.bbox.y0 + w.bbox.y1) / 2 - slope * cx, h: w.bbox.y1 - w.bbox.y0 };
+  });
   const rows = [];
-  for (const w of [...words].sort((a, b) => cy(a) - cy(b))) {
-    const row = rows.find((r) => Math.abs(cy(w) - r.cy) < 0.5 * Math.max(h(w), r.h));
+  for (const w of words.sort((a, b) => a.y - b.y)) {
+    const row = rows.find((r) => Math.abs(w.y - r.y) < 0.5 * Math.max(w.h, r.h));
     if (row) {
       row.words.push(w);
-      row.cy = (row.cy * (row.words.length - 1) + cy(w)) / row.words.length;
-      row.h = Math.max(row.h, h(w));
+      row.y = (row.y * (row.words.length - 1) + w.y) / row.words.length;
+      row.h = Math.max(row.h, w.h);
     } else {
-      rows.push({ cy: cy(w), h: h(w), words: [w] });
+      rows.push({ y: w.y, h: w.h, words: [w] });
     }
   }
-  return rows.map((r) => r.words.sort((a, b) => a.bbox.x0 - b.bbox.x0));
+  return rows.sort((a, b) => a.y - b.y).map((r) => r.words.sort((a, b) => a.bbox.x0 - b.bbox.x0));
 }
 
 // Joins OCR words into text (one line per OCR line) and remembers where

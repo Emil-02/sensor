@@ -16,8 +16,21 @@ func scanEmails(text string) []Finding {
 }
 
 // Labels printed on a KTP or used in forms, at the start of a line and
-// followed by ':' or '='. Group 1 is the label, group 2 the value.
-var lineFieldRe = regexp.MustCompile(`(?im)^[ \t]*(nama(?:[ \t]+lengkap)?|nama[ \t]+ibu(?:[ \t]+kandung)?|alamat(?:[ \t]+lengkap)?|tempat[ \t]*/[ \t]*tg[l1]\.?[ \t]*lahir|tempat[ \t]*/[ \t]*tanggal[ \t]*lahir|tempat[ \t]+lahir|tanggal[ \t]+lahir|tg[l1]\.?[ \t]*lahir|rt[ \t]*/[ \t]*rw|kel[ \t]*/[ \t]*desa|kelurahan|desa|kecamatan)[ \t]*[:=][ \t]*([^\r\n]*?)[ \t]*$`)
+// followed by ':', ';' or '='. Group 1 is the label, group 2 the value.
+// Labels tolerate common OCR misreadings ("Narna", "Tempau/Tgi Lahir",
+// "RT1RW", "Kecamalan").
+var lineFieldRe = regexp.MustCompile(`(?im)^[ \t]*(` + strings.Join([]string{
+	`na(?:m|rn)a(?:[ \t]+lengkap)?`,
+	`na(?:m|rn)a[ \t]+ibu(?:[ \t]+kandung)?`,
+	`a[l1i]ama[tl](?:[ \t]+lengkap)?`,
+	`temp[^\n:;=]{0,20}?lahir`,
+	`t(?:g[l1i]|anggal)\.?[ \t]*lahir`,
+	`rt[ \t]*[/\\|1il]?[ \t]*rw`,
+	`ke[l1i][ \t]*[/\\|1il]?[ \t]*desa`,
+	`kelurahan`,
+	`desa`,
+	`keca[a-z]{3,7}`,
+}, "|") + `)[ \t]*(?:[-–—.,|_~]+[ \t]*)?[:;=][ \t]*([^\r\n]*?)[ \t]*$`)
 
 // Structured keys in JSON ("key": "value") and key=value logs.
 const fieldKeys = `nama|nama_lengkap|namalengkap|full_name|fullname|customer_name|nama_ibu|nama_ibu_kandung|mother_name|mothers_maiden_name|alamat|alamat_lengkap|address|home_address|tempat_lahir|birth_place|place_of_birth|tanggal_lahir|tgl_lahir|birth_date|birthdate|date_of_birth|dob`
@@ -53,7 +66,7 @@ func fieldType(label string) Type {
 	switch {
 	case strings.Contains(l, "lahir"), strings.Contains(l, "birth"), l == "dob":
 		return Birth
-	case strings.HasPrefix(l, "nama"), strings.Contains(l, "name"):
+	case strings.HasPrefix(l, "nama"), strings.HasPrefix(l, "narna"), strings.Contains(l, "name"):
 		return Name
 	}
 	return Address

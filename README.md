@@ -92,7 +92,7 @@ Nama key ikut dipakai sebagai konteks: `"rekening", "1234567890"` dikenali sebag
 
 Deteksi berbasis aturan sehingga mudah diaudit. Angka yang ambigu hanya dilaporkan bila ada kata kunci sebelumnya pada baris yang sama. Hash, UUID, nominal "Rp 1.500.000", timestamp, dan nomor pesanan dijaga agar tidak salah tangkap (lihat `TestNoFalsePositives`).
 
-Keterbatasan: telepon rumah, nomor paspor, dan PDF belum didukung. Nama tanpa label tidak dikenali.
+Keterbatasan: telepon rumah, nomor paspor, dan PDF belum didukung. Nama tanpa label tidak dikenali, termasuk kolom `nama` di CSV karena labelnya hanya ada di baris header. Untuk kasus ini pakai `--types` atau samarkan kolomnya di sumber data.
 
 ## Mengembangkan
 

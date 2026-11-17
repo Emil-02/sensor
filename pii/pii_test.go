@@ -49,6 +49,11 @@ func TestScan(t *testing.T) {
 			"PROVINSI JAWA BARAT\nNIK : 3201014508900001\nNama : SITI AMINAH\nTempat/Tgl Lahir : BOGOR, 05-08-1990\nAlamat : JL. MAWAR NO. 12\nRT/RW : 002/005\nKel/Desa : CIBINONG\nKecamatan : CIBINONG\nAgama : ISLAM",
 			[]string{"nik=3201014508900001", "name=SITI AMINAH", "birth=BOGOR, 05-08-1990", "address=JL. MAWAR NO. 12", "address=002/005", "address=CIBINONG", "address=CIBINONG"},
 		},
+		{
+			"ktp ocr misreadings",
+			"NIK - 3201014508900001\nNarna : SITI AMINAH\nTempauTgi Lahir — : BOGOR, 05-08-1990\nAiamat ; JL. MAWAR NO. 12\nRT1RW : 002/005\nKe1/Desa : CIBINONG\nKecamalan : CIBINONG",
+			[]string{"nik=3201014508900001", "name=SITI AMINAH", "birth=BOGOR, 05-08-1990", "address=JL. MAWAR NO. 12", "address=002/005", "address=CIBINONG", "address=CIBINONG"},
+		},
 		{"json fields", `{"full_name":"Budi Santoso","alamat":"Jl. Melati 3","dob":"1990-01-02"}`, []string{"name=Budi Santoso", "address=Jl. Melati 3", "birth=1990-01-02"}},
 		{"kv fields", `level=info nama="Budi Santoso" alamat=Bandung`, []string{"name=Budi Santoso", "address=Bandung"}},
 		{"empty field", "Nama : -", nil},
