@@ -104,17 +104,21 @@ const STATUS = {
 function getWorker() {
   if (!ocrWorker) {
     const abs = (p) => new URL(p, location.href).href;
-    ocrWorker = Tesseract.createWorker('ind', 1, {
+    // tesseract.js swallows language-loading errors and never settles the
+    // createWorker promise, so failures are surfaced through errorHandler.
+    let fail;
+    const failed = new Promise((_, reject) => { fail = reject; });
+    const created = Tesseract.createWorker('ind', 1, {
       workerPath: abs('vendor/tesseract/worker.min.js'),
       corePath: abs('vendor/core'),
       langPath: abs('lang'),
       workerBlobURL: false,
       gzip: true,
       logger: (m) => onProgress(m),
-    }).catch((err) => {
-      ocrWorker = null;
-      throw err;
+      errorHandler: (e) => fail(new Error(String(e))),
     });
+    ocrWorker = Promise.race([created, failed]);
+    ocrWorker.catch(() => { ocrWorker = null; });
   }
   return ocrWorker;
 }
