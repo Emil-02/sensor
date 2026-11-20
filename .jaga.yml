@@ -1,0 +1,17 @@
+version: 1
+exclude:
+  - node_modules
+  - dist
+  - vendor
+  - .git
+checks:
+  secret:
+    enabled: true
+    severity: critical
+  pii:
+    enabled: true
+    severity: high
+  hygiene:
+    enabled: true
+    severity: low
+fail_on: high

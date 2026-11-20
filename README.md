@@ -1,5 +1,7 @@
 # sensor
 
+[![jaga](https://jaga-card.vercel.app/api/badge?owner=Emil-02&repo=sensor)](https://jaga-card.vercel.app/r/Emil-02/sensor)
+
 [![CI](https://github.com/Emil-02/sensor/actions/workflows/ci.yml/badge.svg)](https://github.com/Emil-02/sensor/actions/workflows/ci.yml)
 [![Go Reference](https://pkg.go.dev/badge/github.com/Emil-02/sensor.svg)](https://pkg.go.dev/github.com/Emil-02/sensor)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
