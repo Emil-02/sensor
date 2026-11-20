@@ -11,7 +11,7 @@
 
 *English: sensor finds and redacts Indonesian personal data (NIK, KK, NPWP, phone numbers, bank accounts, KTP fields) in photos, text and logs. It ships as a Go library, a `log/slog` handler, a CLI and an offline web app.*
 
-> **Pakai AI coding agent?** Pasang [`jaga-skill`](https://github.com/Emil-02/jaga-skill) dengan `npx jaga-skill init` — gate yang menghentikan agent sebelum commit/deploy saat data pribadi atau secret terdeteksi. `sensor` adalah bagian dari aturan di baliknya.
+> **Pakai AI coding agent?** Pasang [`jaga-skill`](https://github.com/Emil-02/jaga/tree/main/skills/jaga-skill) dengan `npx jaga-skill init` — gate yang menghentikan agent sebelum commit/deploy saat data pribadi atau secret terdeteksi. `sensor` adalah bagian dari aturan di baliknya.
 
 ## Kenapa?
 
